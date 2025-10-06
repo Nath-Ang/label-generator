@@ -1,13 +1,30 @@
 import streamlit as st
 
-st.set_page_config(page_title="Label Generator")
+# Base de données fictive (à remplacer par un fichier .json plus tard)
+clients_autorisés = {
+    "client1@example.com": "FVR-2025-001",
+    "client2@example.com": "FVR-2025-002"
+}
 
-st.title("Label Generator")
+# Interface de connexion
+st.title("🔐 Connexion client Fiverr")
 
-name = st.text_input("Enter your name or text")
-color = st.color_picker("Choose a color", "#ff0000")
-size = st.slider("Select label size (mm)", 10, 100, 50)
+email = st.text_input("Email Fiverr")
+code = st.text_input("Code de commande")
 
-if st.button("Generate Label"):
-    st.markdown(f"<div style='background-color:{color}; padding:10px; width:{size*3}px; text-align:center; border-radius:5px;'>"
-                f"<h2 style='color:white;'>{name}</h2></div>", unsafe_allow_html=True)
+if st.button("Connexion"):
+    if email in clients_autorisés and clients_autorisés[email] == code:
+        st.success("✅ Connexion réussie. Bienvenue !")
+
+        # Interface principale de ton app
+        st.header("🎨 Générateur d'étiquettes")
+        texte = st.text_input("Texte à afficher")
+        couleur = st.color_picker("Choisis une couleur")
+        taille = st.slider("Taille du texte", 10, 100, 40)
+
+        if st.button("Générer l'étiquette"):
+            st.markdown(f"<h1 style='color:{couleur}; font-size:{taille}px'>{texte}</h1>", unsafe_allow_html=True)
+
+    else:
+        st.error("❌ Email ou code invalide. Vérifie ta commande.")
+        st.stop()
