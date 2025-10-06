@@ -1,7 +1,7 @@
 import streamlit as st
 import json
 
-# Initialiser la session
+# Initialisation
 if "page" not in st.session_state:
     st.session_state.page = "accueil"
 
@@ -30,12 +30,15 @@ def supprimer_code(code):
 # Page d’accueil
 if st.session_state.page == "accueil":
     st.title("Bienvenue 👋")
-    if st.button("Connexion"):
-        st.session_state.page = "connexion"
-        st.experimental_rerun()
-    if st.button("Première connexion"):
-        st.session_state.page = "activation"
-        st.experimental_rerun()
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Connexion"):
+            st.session_state.page = "connexion"
+            st.experimental_rerun()
+    with col2:
+        if st.button("Première connexion"):
+            st.session_state.page = "activation"
+            st.experimental_rerun()
 
 # Page de connexion
 elif st.session_state.page == "connexion":
@@ -63,8 +66,9 @@ elif st.session_state.page == "activation":
             if st.button("Créer le compte"):
                 enregistrer_client(email, mot_de_passe)
                 supprimer_code(code)
-                st.session_state.page = "accueil"
                 st.success("Compte créé. Tu peux maintenant te connecter.")
+                st.session_state.page = "accueil"
+                st.experimental_rerun()
         else:
             st.error("Code invalide")
 
