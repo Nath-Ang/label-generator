@@ -1,30 +1,83 @@
 import streamlit as st
+import json
 
-# Base de données fictive (à remplacer par un fichier .json plus tard)
-clients_autorisés = {
-    "client1@example.com": "FVR-2025-001",
-    "client2@example.com": "FVR-2025-002"
-}
+# Initialiser la session
+if "page" not in st.session_state:
+    st.session_state.page = "accueil"
 
-# Interface de connexion
-st.title("🔐 Connexion client Fiverr")
+# Fonctions utilitaires
+def charger_clients():
+    with open("clients.json", "r") as f:
+        return json.load(f)
 
-email = st.text_input("Email Fiverr")
-code = st.text_input("Code de commande")
+def charger_codes():
+    with open("codes.json", "r") as f:
+        return json.load(f)
 
-if st.button("Connexion"):
-    if email in clients_autorisés and clients_autorisés[email] == code:
-        st.success("✅ Connexion réussie. Bienvenue !")
+def enregistrer_client(email, mot_de_passe):
+    clients = charger_clients()
+    clients[email] = mot_de_passe
+    with open("clients.json", "w") as f:
+        json.dump(clients, f)
 
-        # Interface principale de ton app
-        st.header("🎨 Générateur d'étiquettes")
-        texte = st.text_input("Texte à afficher")
-        couleur = st.color_picker("Choisis une couleur")
-        taille = st.slider("Taille du texte", 10, 100, 40)
+def supprimer_code(code):
+    codes = charger_codes()
+    if code in codes:
+        del codes[code]
+        with open("codes.json", "w") as f:
+            json.dump(codes, f)
 
-        if st.button("Générer l'étiquette"):
-            st.markdown(f"<h1 style='color:{couleur}; font-size:{taille}px'>{texte}</h1>", unsafe_allow_html=True)
+# Page d’accueil
+if st.session_state.page == "accueil":
+    st.title("Bienvenue 👋")
+    if st.button("Connexion"):
+        st.session_state.page = "connexion"
+        st.experimental_rerun()
+    if st.button("Première connexion"):
+        st.session_state.page = "activation"
+        st.experimental_rerun()
 
-    else:
-        st.error("❌ Email ou code invalide. Vérifie ta commande.")
-        st.stop()
+# Page de connexion
+elif st.session_state.page == "connexion":
+    st.title("🔐 Connexion")
+    email = st.text_input("Email")
+    mot_de_passe = st.text_input("Mot de passe", type="password")
+    if st.button("Se connecter"):
+        clients = charger_clients()
+        if email in clients and clients[email] == mot_de_passe:
+            st.session_state.page = "app"
+            st.experimental_rerun()
+        else:
+            st.error("Identifiants incorrects")
+
+# Page d’activation
+elif st.session_state.page == "activation":
+    st.title("🆕 Première connexion")
+    code = st.text_input("Numéro de commande Fiverr")
+    if st.button("Valider le code"):
+        codes = charger_codes()
+        if code in codes:
+            st.success("Code valide. Crée ton compte.")
+            email = st.text_input("Email")
+            mot_de_passe = st.text_input("Mot de passe", type="password")
+            if st.button("Créer le compte"):
+                enregistrer_client(email, mot_de_passe)
+                supprimer_code(code)
+                st.session_state.page = "accueil"
+                st.success("Compte créé. Tu peux maintenant te connecter.")
+        else:
+            st.error("Code invalide")
+
+# Page principale
+elif st.session_state.page == "app":
+    st.title("🎨 Générateur d'étiquettes")
+    texte = st.text_input("Texte à afficher")
+    couleur = st.color_picker("Choisis une couleur")
+    taille = st.slider("Taille du texte", 10, 100, 40)
+
+    if st.button("Générer l'étiquette"):
+        st.markdown(f"<h1 style='color:{couleur}; font-size:{taille}px'>{texte}</h1>", unsafe_allow_html=True)
+
+    if st.button("Sortir"):
+        st.session_state.page = "accueil"
+        st.experimental_rerun()
