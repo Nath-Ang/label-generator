@@ -2,7 +2,7 @@ import streamlit as st
 import json
 import os
 
-# Initialisation de la session
+# Initialisation
 if "page" not in st.session_state:
     st.session_state.page = "accueil"
 
@@ -33,7 +33,7 @@ def supprimer_code(code):
             json.dump(codes, f)
 
 # 🏠 Page d’accueil
-if st.session_state.page == "accueil":
+def page_accueil():
     st.title("Bienvenue 👋")
     col1, col2 = st.columns(2)
     with col1:
@@ -44,7 +44,7 @@ if st.session_state.page == "accueil":
             st.session_state.page = "activation"
 
 # 🔐 Page de connexion
-elif st.session_state.page == "connexion":
+def page_connexion():
     st.title("🔐 Connexion")
     email = st.text_input("Email")
     mot_de_passe = st.text_input("Mot de passe", type="password")
@@ -56,7 +56,7 @@ elif st.session_state.page == "connexion":
             st.error("Identifiants incorrects")
 
 # 🆕 Page d’activation
-elif st.session_state.page == "activation":
+def page_activation():
     st.title("🆕 Première connexion")
     code = st.text_input("Numéro de commande Fiverr")
     if st.button("Valider le code"):
@@ -74,7 +74,7 @@ elif st.session_state.page == "activation":
             st.error("Code invalide")
 
 # 🎨 Page principale
-elif st.session_state.page == "app":
+def page_app():
     st.title("🎨 Générateur d'étiquettes")
     texte = st.text_input("Texte à afficher")
     couleur = st.color_picker("Choisis une couleur")
@@ -85,3 +85,13 @@ elif st.session_state.page == "app":
 
     if st.button("Sortir"):
         st.session_state.page = "accueil"
+
+# 🧭 Affichage selon la page
+if st.session_state.page == "accueil":
+    page_accueil()
+elif st.session_state.page == "connexion":
+    page_connexion()
+elif st.session_state.page == "activation":
+    page_activation()
+elif st.session_state.page == "app":
+    page_app()
