@@ -5,6 +5,10 @@ import os
 # Initialisation
 if "page" not in st.session_state:
     st.session_state.page = "accueil"
+if "code_valide" not in st.session_state:
+    st.session_state.code_valide = False
+if "code_utilisé" not in st.session_state:
+    st.session_state.code_utilisé = ""
 
 # Fonctions utilitaires
 def charger_clients():
@@ -42,6 +46,7 @@ def page_accueil():
     with col2:
         if st.button("Première connexion"):
             st.session_state.page = "activation"
+            st.session_state.code_valide = False  # Réinitialiser
 
 # 🔐 Page de connexion
 def page_connexion():
@@ -58,20 +63,30 @@ def page_connexion():
 # 🆕 Page d’activation
 def page_activation():
     st.title("🆕 Première connexion")
-    code = st.text_input("Numéro de commande Fiverr")
-    if st.button("Valider le code"):
-        codes = charger_codes()
-        if code in codes:
-            st.success("Code valide. Crée ton compte.")
-            email = st.text_input("Email")
-            mot_de_passe = st.text_input("Mot de passe", type="password")
-            if st.button("Créer le compte"):
-                enregistrer_client(email, mot_de_passe)
-                supprimer_code(code)
-                st.success("Compte créé. Tu peux maintenant te connecter.")
-                st.session_state.page = "accueil"
-        else:
-            st.error("Code invalide")
+
+    # Étape 1 : validation du code Fiverr
+    if not st.session_state.code_valide:
+        code = st.text_input("Numéro de commande Fiverr")
+        if st.button("Valider le code"):
+            codes = charger_codes()
+            if code in codes:
+                st.session_state.code_valide = True
+                st.session_state.code_utilisé = code
+                st.success("✅ Code valide. Tu peux maintenant créer ton compte.")
+            else:
+                st.error("❌ Code invalide")
+
+    # Étape 2 : création du compte
+    if st.session_state.code_valide:
+        email = st.text_input("Email")
+        mot_de_passe = st.text_input("Mot de passe", type="password")
+        if st.button("Créer le compte"):
+            enregistrer_client(email, mot_de_passe)
+            supprimer_code(st.session_state.code_utilisé)
+            st.success("🎉 Compte créé. Tu peux maintenant te connecter.")
+            st.session_state.page = "accueil"
+            st.session_state.code_valide = False
+            st.session_state.code_utilisé = ""
 
 # 🎨 Page principale
 def page_app():
