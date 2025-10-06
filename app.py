@@ -1,18 +1,23 @@
 import streamlit as st
 import json
+import os
 
-# Initialisation
+# Initialisation de la session
 if "page" not in st.session_state:
     st.session_state.page = "accueil"
 
 # Fonctions utilitaires
 def charger_clients():
-    with open("clients.json", "r") as f:
-        return json.load(f)
+    if os.path.exists("clients.json"):
+        with open("clients.json", "r") as f:
+            return json.load(f)
+    return {}
 
 def charger_codes():
-    with open("codes.json", "r") as f:
-        return json.load(f)
+    if os.path.exists("codes.json"):
+        with open("codes.json", "r") as f:
+            return json.load(f)
+    return {}
 
 def enregistrer_client(email, mot_de_passe):
     clients = charger_clients()
@@ -27,20 +32,18 @@ def supprimer_code(code):
         with open("codes.json", "w") as f:
             json.dump(codes, f)
 
-# Page d’accueil
+# 🏠 Page d’accueil
 if st.session_state.page == "accueil":
     st.title("Bienvenue 👋")
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Connexion"):
             st.session_state.page = "connexion"
-            st.experimental_rerun()
     with col2:
         if st.button("Première connexion"):
             st.session_state.page = "activation"
-            st.experimental_rerun()
 
-# Page de connexion
+# 🔐 Page de connexion
 elif st.session_state.page == "connexion":
     st.title("🔐 Connexion")
     email = st.text_input("Email")
@@ -49,11 +52,10 @@ elif st.session_state.page == "connexion":
         clients = charger_clients()
         if email in clients and clients[email] == mot_de_passe:
             st.session_state.page = "app"
-            st.experimental_rerun()
         else:
             st.error("Identifiants incorrects")
 
-# Page d’activation
+# 🆕 Page d’activation
 elif st.session_state.page == "activation":
     st.title("🆕 Première connexion")
     code = st.text_input("Numéro de commande Fiverr")
@@ -68,11 +70,10 @@ elif st.session_state.page == "activation":
                 supprimer_code(code)
                 st.success("Compte créé. Tu peux maintenant te connecter.")
                 st.session_state.page = "accueil"
-                st.experimental_rerun()
         else:
             st.error("Code invalide")
 
-# Page principale
+# 🎨 Page principale
 elif st.session_state.page == "app":
     st.title("🎨 Générateur d'étiquettes")
     texte = st.text_input("Texte à afficher")
@@ -84,4 +85,3 @@ elif st.session_state.page == "app":
 
     if st.button("Sortir"):
         st.session_state.page = "accueil"
-        st.experimental_rerun()
